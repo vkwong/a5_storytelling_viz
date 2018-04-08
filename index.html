@@ -1,0 +1,387 @@
+<!-- Article used: https://medium.com/@ericajoy/after-87ce712b3645 -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>After - Erica Joy</title>
+
+        <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+        
+        <script type="text/javascript" src="http://use.typekit.com/brf5jpj.js"></script>
+        <script src="//use.typekit.net/drk2sev.js"></script>
+        <script type="text/javascript">try{Typekit.load();}catch(e){}</script> 
+              
+        <style type="text/css">
+            
+            body {
+                margin: 0;
+                font-family: "proxima-nova", "Source Sans Pro", sans-serif;
+            }
+
+            #container {
+                margin-left: 30px;
+                margin-right: auto;
+                margin-top: 30px;
+                padding: 30px;
+                background-color: white;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin: 0;
+            }
+
+            p {
+                font-size: 16px;
+                margin: 15px 0 10px 0;
+            }
+
+            a {
+              color: #799DCB;
+              text-decoration: none;
+              transition: color .3s, background .3s, border .3s;
+            }
+            a:hover {
+              color: #48494b;
+              background: #e7e8e9;
+            }
+
+            svg {
+                background-color: white;
+                padding-left: 20px;
+            }
+            
+            path {
+                fill: #799dcb;
+                stroke-width: 1;
+                stroke: #ddd;
+                }
+            path:hover {
+                fill:#48494b;
+                cursor:pointer;
+                stroke-width: 2;
+                stroke: #bbb;
+                opacity: 1;
+            }
+
+            #tooltip {
+                width: 180px;
+                height: auto;
+                padding: 5px;
+                background-color: #fff;
+                color: #000;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                -webkit-box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+                -moz-box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+                box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+                position: absolute;
+                }
+                
+            #tooltip.hidden {
+                display: none;
+            }
+            
+            #tooltip p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 18px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="container">
+
+            <h1>After by Erica Joy</h1>
+
+            <p>On November 8, 2016, I went to bed before anyone could read an acceptance or concession speech. I couldn’t really face the reality of a President Donald Trump. Refused to. Some part of me hoped that I’d go to bed and some electoral college miracle would have happened when I woke up. Some county in Florida or North Carolina would have gotten their results in late and been overwhelmingly for Hillary, flipping the state to Blue. Something.</p>
+
+            <p>I woke up on November 9, 2016 at around 4am. I looked at my phone. Saw that no miracles happened. I sat in bed and cried so hard my body shook. I didn’t get much sleep after that. For the rest of the day, I alternated between somehow forgetting that the unthinkable had occurred and suddenly remembering. Every time, it felt like someone had squeezed my internal organs. I’ve never been punched in the gut, but maybe that’s what it feels like. I did not go to work. Could not. I feared that people would behave as though nothing major had happened. That it was no big deal. That everything was business as usual. Because everything decidedly, was not.</p>
+
+            <p>On November 10, much of the country was reeling in horror and shock, outraged by what they’d seen on Day 1 of Trump’s America. Is there a name for you feel when you were right about something you wished to be wrong about? That was what many of us were feeling, in addition to the horror and shock. For a long time, we have been trying to warn about the vein of hate, intolerance, sexism, and racism that flows through this country. Often times we have been told “it’s not as bad as we think,” or “there are only a few bad apples,” or “that’s just small pockets of people in unprogressive places.” On November 10, that fantasy was shattered for many, as they came face to face with the hate that many of their fellow citizens either felt or were able to accept.</p>
+
+            <p>There are still those who are in the denial phase of this process. Who refuse to believe that roughly 50% of those who voted, voted to elect a man who has been openly racist, sexist, and otherwise bigoted. Refuse to believe that a large chunk of the country didn’t see fit to take time out of their day to make sure this man didn’t get elected. Refuse to believe that the racism, sexism, and as one non-believer called it “boorish behavior” of Trump was acceptable to many.</p>
+              
+            <p>It is to those non-believers I speak right now, and to everyone else, especially those of us in the tech industry. Actually to everyone in the tech industry: this is your wake up call. 20% of San Mateo county voted for Trump. 20% of Santa Clara county voted for Trump. 1 out of 5 people in Silicon Valley voted for Trump.
+              <br><span style="font-size:12px">
+Source: Politico, <a href= "https://www.politico.com/2016-election/results/map/president/california/">politico.com/2016-election/results/map/president/california/</a></span></p>
+        
+             <div id="key" class="barlabel"><p>Counties shaded by percentage of Trump supporters within county population.</p> </div>
+
+        </div>
+
+        <!-- TOOLTIP COPY -->
+        <div id="tooltip" class="hidden">
+            <p>County: <span id="county">County Name</span></p>
+            <p>Trump Vote Count: <span id="dataTV">dataTV</span></p>
+            <p>Trump Percent: <span id="dataTP">dataTP</span>%</p>
+            <!-- <p>Clinton Percent: <span id="dataCP">dataCP</span>%</p> -->
+            <!-- <p>Clinton Vote Count: <span id="dataCV">dataCV</span></p> -->
+        </div>
+
+        <!-- referenced: http://bl.ocks.org/threestory/ed0f322d7bb2e3be8ded for county json implementation -->
+        <script type="text/javascript">
+            //Width and height
+            var w = 760;
+            var h = 600;
+
+            //Define map projection
+            var projection = d3.geo.mercator()
+                                   .center([ -120, 37 ])
+                                   .translate([ w/2, h/2 ])
+                                   .scale([ w*3.3 ]);
+
+            var color = d3.scale.quantize()
+                .range(['#f6d6d6','#f1baba','#dc5858','#d32e2e','#aa2424','#8e1e1e','#721818']);
+
+            //Define path generator
+            var path = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG
+            var svg = d3.select("#container")
+                        .append("svg")
+                        .attr("width", w)
+                        .attr("height", h);
+
+            // data from: https://www.politico.com/2016-election/results/map/president/california/
+            d3.csv("data.csv", function(data) {
+
+                console.log(data);
+                
+                //color scale input domain 
+                color.domain([
+                    0, 
+                    d3.max(data, function(d) { return +d.trumpP; })
+                ]);
+            
+                //Load in GeoJSON data
+                d3.json("cb_2014_us_county_5m.json", function(json) {
+                    console.log(json);
+                    
+                    //Loop through once for each voting data value
+                    for (var i = 0; i < data.length; i++) {
+                
+                        //Grab country name
+                        var dataCounty  = data[i].County;
+                        
+                        //Grab data value, and convert from string to float
+                        var dataTP = +data[i].trumpP;
+                        var dataCP = +data[i].clintonP;
+                        var dataTV = +data[i].trumpV;
+                        var dataCV = +data[i].clintonV;
+                
+                        //Find the corresponding county inside the GeoJSON
+                        for (var j = 0; j < json.features.length; j++) {
+                        
+                            //We'll check the official ISO country code
+                            var jsonCounty = json.features[j].properties.NAME;
+                
+                            if (dataCounty == jsonCounty) {
+                        
+                                //Copy the data value into the GeoJSON
+                                json.features[j].properties.dataTP = dataTP;
+                                json.features[j].properties.dataCP = dataCP;
+                                json.features[j].properties.dataTV = dataTV;
+                                json.features[j].properties.dataCV = dataCV;
+                                
+                                //Stop looking through the JSON
+                                break;
+                                
+                            }
+                        }       
+                    }
+                    
+                    
+                    //Bind data and create one path per GeoJSON feature
+                    svg.selectAll("path")
+                        .data(json.features)
+                        .enter()
+                        .append("path")
+                        .attr("d", path)
+                        .style("fill", function(d){
+
+                            var value = d.properties.dataTP;
+
+                            if (value) {
+                                //If value exists…
+                                return color(value);
+                            } else {
+                                //If value is undefined…
+                                return "#ccc";
+                            }
+                            
+                            })
+                        .on("mouseover", function(d){
+                            var xPosition = w/2 + 150;
+                            var yPosition = h/2 + 450;
+//                          d3.select("path")
+//                          .attr("stroke-width", 2)
+//                          .attr("stroke", "#222");
+                            d3.select("#tooltip")
+                            .style("left", xPosition + "px")
+                            .style("top", yPosition + "px");
+
+                            d3.select("#county")
+                            .text(d.properties.NAME);
+                            d3.select("#dataTP")
+                            .text(d.properties.dataTP);
+                            d3.select("#dataCP")
+                            .text(d.properties.dataCP);
+                            d3.select("#dataTV")
+                            .text(d.properties.dataTV);
+                            d3.select("#dataCV")
+                            .text(d.properties.dataCV);
+
+                            d3.select("#tooltip")
+                            .classed("hidden", false);
+                            })
+                            .on("mouseout", function(){
+                            d3.select("#tooltip").classed("hidden", true);
+                            });
+                            
+            // Create key bar
+                    //Define gradient
+                    var gradient = svg.append("svg:defs")
+                        .append("svg:linearGradient")
+                        .attr("id", "gradient")
+                        .attr("x1", "0%")
+                        .attr("y1", "0%")
+                        .attr("x2", "100%")
+                        .attr("y2", "0%")
+                        .attr("spreadMethod", "pad");
+            
+                    //Define gradient colors
+                    gradient.append("svg:stop")
+                        .attr("offset", "0%")
+                        .attr("stop-color", "#f7f7f7")
+                        .attr("stop-opacity", 1);
+        
+                    gradient.append("svg:stop")
+                        .attr("offset", "50%")
+                        .attr("stop-color", "#c53939")
+                        .attr("stop-opacity", 1);
+
+                    gradient.append("svg:stop")
+                        .attr("offset", "100%")
+                        .attr("stop-color", "#480f0f")
+                        .attr("stop-opacity", 1);
+                    
+                    //key bar variables             
+                    var keybarW = 125,
+                        keybarH = 12,
+                        keybarPad = 10;                 
+                    
+                    var keybar = d3.select("#key")
+                    .append("svg")
+                    .attr("width", keybarW * 1.8)
+                    .attr("height", keybarH * 1.5);
+                    
+                    keybar.append("rect")
+                    .attr("x", keybarPad * 3)
+                    .attr("y", 0)
+                    .attr("width", keybarW)
+                    .attr("height", keybarH)
+                    .attr("fill", "url(#gradient)");
+        
+                    // Key bar text front
+                    keybar.append("text")
+                        .text("0%")
+                        .attr("x", keybarPad + 13)
+                        .attr("y", keybarPad)
+                        .attr("font-size", "11px")
+                        .attr("font-weight", "bold")
+                        .attr("text-anchor", "end")
+                        .style("fill", "black");
+        
+                    // Key bar text back
+                    keybar.append("text")
+                        .text("100%")
+                        .attr("x", keybarW + keybarPad * 3 + 3)
+                        .attr("y", keybarPad)
+                        .attr("font-size", "11px")
+                        .attr("font-weight", "bold")
+                        .attr("text-anchor", "start")
+                        .style("fill", "black");
+
+                    // // Key bar text middle
+                    // keybar.append("text")
+                    //     .text("zero")
+                    //     .attr("x", keybarW/2 + keybarPad * 3)
+                    //     .attr("y", keybarPad - 1)
+                    //     .attr("font-weight", "bold")
+                    //     .attr("font-size", "11px")
+                    //     .attr("text-anchor", "middle")
+                    //     .style("fill", "black");
+            
+                });
+            });
+
+        </script>
+      <div id="container">
+        <p>1 out of 5 people in Silicon Valley either share his values or find them acceptable. 1 out of 10 in San Francisco county feel the same. These are the folks in your tech companies we’ve been telling you about. The ones who say racist things, who think sexism is ok, who quietly (or sometimes not so quietly) support bigotry. And these folks have now received a mandate, via the vote of the American people, that this is acceptable.</p>
+
+        <p>It is time for leaders in the the tech industry to double down on their Diversity and Inclusion efforts. It is time for leaders to say that they outright reject this racism, sexism, and bigotry and will not have it in their companies. The CEO of GrubHub, Matt Maloney, demonstrated exactly what I think CEO’s of tech companies need to do right now with a letter to his employees I’ll extract an excerpt from:</p>
+
+        <p>While demeaning, insulting and ridiculing minorities, immigrants and the physically/mentally disabled worked for Mr. Trump, I want to be clear that this behavior — and these views, have no place at Grubhub. Had he worked here, many of his comments would have resulted in his immediate termination.</p>
+
+        <p>We have worked for years cultivating a culture of support and inclusiveness. I firmly believe that we must bring together different perspectives to continue innovating — including all genders, races, ethnicities and sexual, cultural or ideological preferences. We are better, faster and stronger together.</p>
+
+        <p>Further I absolutely reject the nationalist, anti-immigrant and hateful politics of Donald Trump and will work to shield our community from this movement as best as I can. As we all try to understand what this vote means to us, I want to affirm to anyone on our team that is scared or feels personally exposed, that I and everyone else here at Grubhub will fight for your dignity and your right to make a better life for yourself and your family here in the United States.</p>
+
+        <p>If you do not agree with this statement then please reply to this email with your resignation because you have no place here. We do not tolerate hateful attitudes on our team. I want to repeat what Hillary said this morning, that the new administration deserves our open minds and a chance to lead, but never stop believing that the fight for what’s right is worth it.</p>
+
+        <p>Matt received much backlash for this, because many folks never read the letter he sent and instead wrongly believed headlines that he’d called for Trump voters to be fired. However, Matt said exactly what needs to be said:</p>
+
+        <p>1. Hate has no place at his company.<br>
+          2. Comments similar to the ones Trump made will result in immediate termination.<br>
+          3. He and the company reject the nationalist, anti-immigration, hateful policies espoused by Trump during the campaign.<br>
+          4. He and the company will work to shield and fight for those in danger.<br>
+          5. If you do not agree with any of that, email your resignation.<br>
+          6. Hate has no place at his company.
+        </p>
+
+        <p>These ideas are not revolutionary, and may seem like common sense to some. If you are sexist, racist, or bigoted and say hateful things, you’ll be fired. If you don’t want to work at a company that will fight for the safety of marginalized folks in danger, quit. And yet, because of this letter, Trump voters called for a boycott of GrubHub. GrubHub’s stock took a hit, to the tune of $300 million. We have officially come to the point in time when you have to, to borrow a phrase from Hack the Hood, put your money where your values are. It is time to openly express support for those who are marginalized and take whatever financial hit that causes your company.</p>
+
+        <p>Of equal importance is making sure your apps and sites are secure. The Trump administration is quite fond of making lists of “haters.” Newt Gingrich has called for the return of the House Un-American Activities Committee. Trump will have the power of the entire U.S. Government domestic spying apparatus at his fingertips. Those nation-state level attacks aimed at “dissidents” will now come from the U.S. and will be aimed at countless American citizens, to determine if they’re engaging in “disloyalty and subversive activities.” Every company that handles messaging and communications on behalf of it’s customers or stores Personally Identifiable Information about its customers should be working on the following:</p>
+
+        <p>* Adding or strengthening encryption of customer data in transit and at rest: Encrypting data ensures privacy (your data can’t be snooped) and integrity (your data can’t be tampered with). In the presence of nation state threats, which we know exist domestically (never forget “SSL added and removed here”) encryption is the only way to have any level of data protection online. Encrypt your customer data in-house and encrypt it end to end. There should be no point at which your customer data is stored or transmitted in the clear.</p>
+
+        <p>* Adding two factor auth to all customer and employee accounts: People re-use passwords, it’s a fact of life. Once an account is breached in one place, don’t expect the U.S. Government to do some password dump looking for a payday. Expect them to use those passwords to gain access to other accounts on other sites. Protect your customers from this by adding 2FA to all accounts so access to an account requires more than a password. If you don’t have the engineering team to handle building 2FA into your product in house, talk to Authy, Auth0, or Instant2FA* (currently in closed beta, but I have a beta access code for you if you need one). Resist the urge to offer or rely on SMS as your second factor, since it’s trivially bypassed by cell companies who have already demonstrated their willingness to comply with government surveillance. Once you’ve implemented 2FA, vigorously encourage it’s use among your customers. Give them incentives to use it.<br>
+        If your internal organization logins do not have 2FA (and they really must, for reasons I’ll get into below), talk to Duo, and make 2FA a requirement for all employee logins. In short, if customers have data on your platform that can be used to identify or target them, 2FA needs to move from “nice to have” to “must have.”<br>
+        *Full Disclosure: My significant other is co-founder and CEO of Instant2FA.</p>
+
+        <p>* Locking down access to customer data: Remember those 1/5 people in your company who voted for Trump? Some might very well think this is a good time to shoot their shot to get into his good graces by feeding him information from inside the company, including customer data. I know we all like to assume good intent, but your assumptions of good intent could cost someone their life. Follow the principle of least privilege: if an employee doesn’t require access to customer data to do their job, then their account should not have privileges to access that data. If customer data is not already protected in this way, immediately require 2 human auth to access customer data. As in, to get access to customer data, a person needs themselves and someone else to log in to whatever tool you use for customer data access. If you’re not already doing this (you should be), ensure that monitoring for your databases that house customer data is in place, and keep an immutable audit trail of all access to those databases, in case there is a breach. If someone in your company accesses customer data, you should know it, and be telling people about it, immediately.</p>
+
+        <p>* Minimize the amount of customer data you collect: Practice good data minimization hygiene by reducing the amount of customer data you do collect to just that which you absolutely need. Think about every piece of data you collect about your customers and how it could be used against them. If you discover you’re collecting data you don’t really need but could cause significant harm for people, get rid of it. Once you’ve finished that exercise, ensure the data collected is purged once the intended use for it has passed.</p>
+
+        <p>Put your roadmap aside for a while, because whether or not you do the above things could be the difference between life and death for many of your customers, especially the marginalized customers.</p>
+
+        <p>For those who are looking for the “next great app” to build, you have a new mandate: protect those in danger who wish to stay, and help those in danger who wish to leave. Start building things that solve the following:</p>
+
+        <p>* Funding passports for those seeking to leave the country<br>
+          * Determining which countries are best for those seeking asylum<br>
+          * Streamlining the process of moving to those countries<br>
+          * Match people who need protection with those offering it<br>
+        * Secure, private, and verified communications. (Please throw lots of your energy into improving Signal, which is open source.)</p>
+
+        <p>You get the idea. To summarize, there are now millions of people in the United States that are potentially in danger. Those are your customers. Build for them. If you can’t get funding to build apps like this, let me know and I’ll put you in touch with VC’s who want to do the right thing and be on the right side of history.</p>
+
+        <p>Lastly, tech industry, I and others need for you to have a great deal of empathy right now. I want you to think about how you’d feel if you truly felt the lives of your family and many people you love were in grave danger. Mortal danger. If someone who has built a career hating you was now in control of the country you live in. If you’re a straight person, imaged what it would feel like if someone who wanted you to be gay, by any means necessary, including torture, was now in position to set policies about your life. I want you to try to think about that…feel that. Really take about 30 seconds, right now, to try to feel what that feels like, if you’ve never been in that position before. I’ll wait.</p>
+
+        <p>⏲ ⏲ ⏲</p>
+
+        <p>Did you think about it? Did you feel it? Hopefully you now have a better understanding the terror, sadness, anger, and uncertainty many of your coworkers are feeling today. Many of us are unsure what next year will bring for us. Many of us are unsure if we’re even staying in this country. While you’re having discussions about how we’ve been here before, and we’ve just got to ride it out like we did for Bush, many of your coworkers aren’t sure if we’ll stay in the country, because vehement and vocal racism, sexism, and homophobia will be the norm in the U.S. Government. None of us have been here before. Perhaps our grandparents have. But we haven’t.</p>
+
+        <p>The reality for those of us that aren’t straight, white, men is that at best, our civil liberties are about to be eroded and at worst, well, there are many reasons Donald Trump and his administration invite Hitler comparisons. Know that this is what some of your coworkers are carrying around with them. Do not assume smiles or occasionally jokes are indicators that we are “ok.” We just can’t cry all day at work, so we smile and make jokes to get through, until the next day. We will repeat this until it becomes clear that it is time for us to go, and you won’t see those smiles anymore, because you won’t see us anymore.</p>
+
+        <p>. . .</p>
+
+        <p>Afterword: I never thought we’d be here. I never thought I’d be writing this. I thought I’d be making jokes about who I thought would be angling for a seat in HRC’s administration. I thought we’d be trying to figure out just what exactly Bill Clinton was going to be called. I thought I’d be figuring out if I had enough PTO to go to the inauguration. Instead I’m doing my best to tune out my so called allies who are making noises about “appealing” to those who would see us killed versus seeing me treated like a person. Instead I am counting down the days until the inauguration. Instead I am eating Cool Whip and cookies, drinking more wine, doing everything I can to feel something that resembles “good” in the face of a future that will range from bad to horrific. Instead I am trying to figure out what to do next, where to put my energy, be it in fighting back or getting out. Because though I have the desire to fight, I also have the desire to live.</p>
+
+      </div>
+    </body>
+</html>
