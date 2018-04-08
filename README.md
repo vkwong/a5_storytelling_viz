@@ -1,2 +1,2 @@
-# a5_storytelling_viz
-CSE557 Storytelling Visualization Assignment 5
+# Storytelling Visualization
+CSE557 Assignment 5
